@@ -619,6 +619,16 @@ describe 'example::default' do
 end
 ```
 
+Mocking databags in ServerRunner is as easy as creating a hash containing a valid data bag object and passing it to .create_data_bag:
+```ruby
+bag_items = { 'foo' => { 'key1' => 'value1', 'id' => 'foo' } }
+...
+runner = ChefSpec::ServerRunner.new do |node, server|
+  server.create_data_bag('databag_name', bag_items)
+end
+```
+
+
 ### Search
 **NOTE** This is not required if you are using a ChefSpec server.
 
@@ -769,6 +779,12 @@ end
 
 **There is probably a better/easier way to do this. If you have a better solution, please open an issue or Pull Request so we can make this less painful :)**
 
+Using ServerRunner is much more straightforward:
+```ruby
+runner = ChefSpec::ServerRunner do |node, server|
+  allow(node).to receive(:environment).and_return('staging')
+end
+```
 
 Testing LWRPs
 -------------
@@ -1041,6 +1057,13 @@ end
 ChefSpec::SoloRunner.new(role_path: '/var/my/roles') # local setting
 ```
 
+Testing with ServerRunner is similar, whether you're testing for roles on the test node or a node generated in your ServerRunner block (to use with search, for example)
+```ruby
+runner = ChefSpec::ServerRunner do |node, server|
+  server.create_node('cow.foo.com', run_list: 'role[breakfast]' ...)
+end
+runner.converge('role[breakfast]', described_recipe)
+```
 
 Faster Specs
 ------------
